@@ -1,0 +1,26 @@
+body {
+    font-family: 'Inter', sans-serif;
+    color: #fff; /* Set default text color to white for better contrast */
+}
+
+/* Vanta.js container styling */
+#vanta-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* Place it behind all other content */
+}
+
+/* Ensure the main container is layered on top */
+.main-container {
+    position: relative;
+    z-index: 1;
+}
+
+/* Custom styles for better visual feedback on input focus */
+.input-focus:focus {
+    box-shadow: 0 0 0 2px #3b82f6;
+    border-color: #3b82f6;
+}
