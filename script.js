@@ -34,8 +34,7 @@ calculateBtn.addEventListener('click', () => {
     const totalAbsences = parseInt(totalAbsencesEl.value);
     const totalOaa = parseInt(totalOaaEl.value);
     const fineThreshold = 90;
-    const finePerPercent = 400;
-
+    
     // --- Input Validation ---
     if (isNaN(totalLectures) || isNaN(totalAbsences) || isNaN(totalOaa)) {
         showError("Please fill in all fields with numbers.");
@@ -84,9 +83,32 @@ calculateBtn.addEventListener('click', () => {
         statusMessageEl.textContent = "Fine Applicable";
         statusMessageEl.classList.add('bg-red-100', 'text-red-800', 'dark:bg-red-900', 'dark:text-red-300');
         
-        // Calculate the fine
-        const percentageDeficit = fineThreshold - currentPercentage;
-        const fineAmount = Math.ceil(percentageDeficit) * finePerPercent;
+        // --- New Tiered Fine Calculation Logic ---
+        let fineAmount = 0;
+        const fineTier1Threshold = 90;
+        const fineTier2Threshold = 75;
+        const fineTier3Threshold = 70;
+
+        if (currentPercentage < fineTier1Threshold && currentPercentage >= fineTier2Threshold) {
+            // Fine for attendance between 75% and 89.99% (₹400/percent)
+            const percentageDeficit = fineTier1Threshold - currentPercentage;
+            fineAmount = Math.ceil(percentageDeficit) * 400;
+
+        } else if (currentPercentage < fineTier2Threshold && currentPercentage >= fineTier3Threshold) {
+            // Fine for attendance between 70% and 74.99%
+            const fineForFirstTier = (fineTier1Threshold - fineTier2Threshold) * 400; // Fine for 90% down to 75%
+            const percentageDeficitInSecondTier = fineTier2Threshold - currentPercentage;
+            const fineForSecondTier = Math.ceil(percentageDeficitInSecondTier) * 800; // Fine for below 75%
+            fineAmount = fineForFirstTier + fineForSecondTier;
+
+        } else if (currentPercentage < fineTier3Threshold) {
+            // Fine for attendance below 70%
+            const fineForFirstTier = (fineTier1Threshold - fineTier2Threshold) * 400; // Fine for 90% down to 75%
+            const fineForSecondTier = (fineTier2Threshold - fineTier3Threshold) * 800; // Fine for 75% down to 70%
+            const percentageDeficitInThirdTier = fineTier3Threshold - currentPercentage;
+            const fineForThirdTier = Math.ceil(percentageDeficitInThirdTier) * 1000; // Fine for below 70%
+            fineAmount = fineForFirstTier + fineForSecondTier + fineForThirdTier;
+        }
 
         // Format fine amount for display
         const formatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 });
@@ -108,3 +130,4 @@ function showError(message) {
     statusMessageEl.classList.add('bg-yellow-100', 'text-yellow-800', 'dark:bg-yellow-900', 'dark:text-yellow-300');
     fineMessageEl.textContent = message;
 }
+
